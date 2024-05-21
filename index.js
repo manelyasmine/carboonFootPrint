@@ -8,6 +8,7 @@ import uploadRoutes from "./routes/dataRoutes.js";
 import targetRoutes from "./routes/targetRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import cors from 'cors'
 
 dotenv.config();
 const port = process.env.PORT;
@@ -15,6 +16,10 @@ connectDB();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({
+  origin: 'http://localhost:3000', // Your Next.js frontend URL
+  credentials: true,
+}))
 
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);

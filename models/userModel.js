@@ -5,6 +5,18 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    firstname:{
+      type: String,
+      required: false
+    },
+    lastname: {
+      type : String,
+      required: false
+    },
+    phone: {
+      type : String,
+      required: false
+    },
     email: {
       type: String,
       required: true,
@@ -12,7 +24,7 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: true, 
     },
     isAdmin: {
       type: Boolean,
@@ -20,7 +32,7 @@ const userSchema = mongoose.Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict : false}
 );
 
 const user = mongoose.model("user", userSchema);

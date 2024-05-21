@@ -28,6 +28,10 @@ router
   .put(authenticate, updateUser);
 
 router
+  .route('/:id')
+  .put( authenticate,updateUser);
+
+router
   .route("/:id")
   .delete(authenticate, authorizedAsAdmin, deleteUser)
   .get(authenticate, authorizedAsAdmin, getuserById)
