@@ -25,6 +25,8 @@ const createUser = async (req, res) => {
     res.status(201).json({
       _id: newuser._id,
       username: newuser.username,
+      firstname:newuser.firstname,
+      lastname:newuser.lastname,
       email: newuser.email,
       isAdmin: newuser.isAdmin,
     });
@@ -39,7 +41,6 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
     const existingUser = await user.findOne({ email });
-
     if (existingUser) {
       const passvalid = await bcrypt.compare(password, existingUser.password);
       if (passvalid) {
@@ -56,10 +57,13 @@ const loginUser = async (req, res) => {
       } else {
         return res.status(401).json({ error: "Invalid email or password" });
       }
+    }else{
+      return res.status(401).json({ error: "Invalid email or password" });
     }
   } catch (e) {
     return res.status(401).json({ error: "Error Occured" });
   }
+  
 
   //return res.status(401).json({ error: "Invalid email or password" });
 };
@@ -103,6 +107,10 @@ const updateUser = async (req, res) => {
     myuser.firstname = req.body.firstname || myuser.firstname;
     myuser.lastname = req.body.lastname || myuser.lastname;
     myuser.phone = req.body.phone || myuser.phone;
+    myuser.city = req.body.city || myuser.city;
+    myuser.country = req.body.country || myuser.country;
+    myuser.timezone = req.body.timezone || myuser.timezone;
+
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(req.body.password, salt);
@@ -116,6 +124,9 @@ const updateUser = async (req, res) => {
       firstname: updated.firstname,
       lastname: updated.lastname,
       phone: updated.phone,
+      city: updated.city,
+      country: updated.country,
+      timezone: updated.timezone,
     });
   } else {
     res.status(404);

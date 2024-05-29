@@ -42,6 +42,15 @@ const createTarget = async (req, res) => {
   }
 };
 
+const getTarget = async (req, res) => { 
+  try{ 
+    const targetRes = await target.find({});
+    res.json(targetRes);
+  }catch(e) {
+    return res.status(400).json({ error: "Internal Server Error" });
+  }
+}
+
 const updateTarget = async (req, res) => {
   try {
     const { name, emissionReduction, type, baseYear, targetYear } = req.body;
@@ -96,4 +105,4 @@ const deleteTarget = async (req, res) => {
 const detailsTarget=async (req,res)=>{
 
 }
-export { createTarget, updateTarget,deleteTarget,detailsTarget };
+export { createTarget, updateTarget,deleteTarget,detailsTarget , getTarget };

@@ -1,13 +1,14 @@
 import express from "express";
 const router = express.Router();
-import { createTarget,updateTarget,detailsTarget,deleteTarget } from "../controllers/targetcontroller.js";
+import { createTarget,updateTarget,detailsTarget,deleteTarget, getTarget } from "../controllers/targetcontroller.js";
 import {
   authenticate,
   authorizedAsAdmin,
 } from "../middlewares/authMiddleware.js";
 
 router.route("/").post(authenticate, authorizedAsAdmin, createTarget);
-router.route("/update").post(authenticate,authorizedAsAdmin,updateTarget);
+router.route("/").get(authenticate, authorizedAsAdmin, getTarget);
+router.route("/").put(authenticate,authorizedAsAdmin,updateTarget);
 router.route("/details/:id").get(authenticate,authorizedAsAdmin,detailsTarget);
 router.route("/:id").delete(authenticate, authorizedAsAdmin, deleteTarget);
 

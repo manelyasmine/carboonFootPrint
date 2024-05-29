@@ -26,6 +26,18 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true, 
     },
+    city:{
+      type: String,
+      required: false
+    },
+    country:{
+      type: String,
+      required: false
+    },
+    timezone:{
+      type: String,
+      required: false
+    },
     isAdmin: {
       type: Boolean,
       required: true,
