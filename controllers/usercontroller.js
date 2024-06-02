@@ -112,9 +112,14 @@ const updateUser = async (req, res) => {
     myuser.timezone = req.body.timezone || myuser.timezone;
 
     if (req.body.password) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(req.body.password, salt);
-      myuser.password = hashedPassword;
+      const passvalid = await bcrypt.compare(req.body.currentpassword, myuser.password);
+      if(passvalid){ 
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        myuser.password = hashedPassword;
+      }else{
+        return res.status(401).json({ error: "Invalid password" });
+      }
     }
     const updated = await myuser.save();
     res.json({
