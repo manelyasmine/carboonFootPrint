@@ -1,6 +1,10 @@
 import express from "express";
+<<<<<<< Updated upstream
 
 //import errorHandler from '../middlewares/errorHandler';
+=======
+import cors from 'cors';
+>>>>>>> Stashed changes
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
