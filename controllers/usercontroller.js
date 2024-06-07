@@ -2,6 +2,9 @@ import bcrypt from "bcryptjs";
 import createToken from "../utils/createToken.js";
 import user from "../models/userModel.js";
 
+import { check, validationResult } from 'express-validator';
+import createError from 'http-errors';
+
 const createUser = async (req, res) => {
   const { username, firstname, lastname, phone, email, password } = req.body;
   if (!username || !email || !password) {
@@ -168,19 +171,36 @@ const updateUserById = async (req, res) => {
   const myuser = await user.findById(req.params.id);
   if (myuser) {
     myuser.username = req.body.username || myuser.username;
-    myuser.email = req.body.email || myuser.email;
+   //dont give him right to change email even if he is admin
+   // myuser.email = req.body.email || myuser.email;
     myuser.isAdmin = Boolean(req.body.isAdmin);
+    //update role get all roles and change role to one of them
+    //update status
+    myuser.status=req.body.status || myuser.status;
+    myuser.phone=req.body.phone || myuser.phone;
+    myuser.roles=req.body.roles || myuser.roles;
+    
+
     const updateduser = await myuser.save();
     res.json({
       _id: updateduser._id,
       username: updateduser.username,
-      email: updateduser.email,
+      //email: updateduser.email,
+      isAdmin: updateduser.isAdmin,
+      phone:updateduser.phone,
+      status:updateduser.status,
+      roles:updateduser.role,
+
+
     });
   } else {
     res.status(404);
     throw new Error("user not found  ");
   }
 };
+
+
+ 
 export {
   createUser,
   loginUser,

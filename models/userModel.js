@@ -43,6 +43,21 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    status:{
+      type: String,
+      enum: ["active", "desactive"],
+      default: "active",
+    },
+    phone:{
+      type:String,
+      required:false,
+    },
+    roles: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Role',  
+    },
+    companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' }
+
   },
   { timestamps: true, strict : false}
 );

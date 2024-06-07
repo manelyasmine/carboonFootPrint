@@ -11,16 +11,29 @@ const taskSchema = mongoose.Schema(
       required: true,
       ref: "target",
     },
-    assignedUser: {
+    assignedUser: [{
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "user",
-    },
+    }],
     status: {
       type: String,
-      enum: ["pending", "completed"],
+      enum: ["pending", "completed","rejected"],
       default: "pending",
     },
+    dueDate:{
+      type:Date,
+      required:true
+    },
+    createdBy:{
+      type:mongoose.Schema.Types.ObjectId,
+      required:true,
+      ref:"user",
+    },
+    progress:{
+      type:Number,
+      required:false,
+    }
   },
   { timestamps: true }
 );

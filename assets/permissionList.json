@@ -1,0 +1,50 @@
+[
+    {
+        "name": "read_user_management"
+      },
+      {
+        "name": "write_user_management"
+      },
+      {
+        "name": "create_user_management"
+      },
+    
+    {
+      "name": "read_emission_tracking"
+    },
+    {
+      "name": "write_emission_tracking"
+    },
+    {
+      "name": "create_emission_tracking"
+    },
+    {
+        "name": "read_task"
+      },
+      {
+        "name": "write_task"
+      },
+      {
+        "name": "create_task"
+      },
+      {
+        "name": "read_targets"
+      },
+      {
+        "name": "write_targets"
+      },
+      {
+        "name": "create_targets"
+      },
+      {
+        "name": "read_reports"
+      },
+      {
+        "name": "write_reports"
+      },
+      {
+        "name": "create_reports"
+      }
+     
+  ]
+  
