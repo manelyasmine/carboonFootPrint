@@ -1,10 +1,6 @@
 import express from "express";
-<<<<<<< Updated upstream
 
 //import errorHandler from '../middlewares/errorHandler';
-=======
-import cors from 'cors';
->>>>>>> Stashed changes
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
@@ -29,13 +25,8 @@ app.use(cors({
   credentials: true,
 }))
 
-<<<<<<< Updated upstream
 app.use("/api/users", userRoutes);
 app.use("/tasks", taskRoutes);
-=======
-app.use("/api/users",cors(), userRoutes);
-app.use("/api/tasks", taskRoutes);
->>>>>>> Stashed changes
 app.use("/upload", uploadRoutes);
 app.use("/target", targetRoutes);
 app.use("/company", companyRoutes);
