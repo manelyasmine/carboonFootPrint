@@ -30,7 +30,6 @@ const companySchema = mongoose.Schema({
     type: String,
     required: true,
   },
-<<<<<<< Updated upstream
   business:{
     type:String,
     required:true,
@@ -55,12 +54,6 @@ const companySchema = mongoose.Schema({
  
   
 
-=======
-  description:{
-    type: String,
-    required: false,
-  }
->>>>>>> Stashed changes
 });
 
 const company = mongoose.model("company", companySchema);
