@@ -54,6 +54,7 @@ const checkRole = (roles) => async (req, res, next) => {
  */
 
 const checkPermissions = (permissions) => { 
+  console.log("checkPermissions==>",permissions)
   return async(req, res, next) => {
     try { 
     const user = req.user;  
@@ -61,6 +62,8 @@ const checkPermissions = (permissions) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const permission_user = await Role.findById(user.role);
+
+  console.log("permission_user==>",user,permission_user)
     const hasPermission = permissions.every(permission => permission_user.permissions.includes(permission));
     console.log("hasPermission",hasPermission)
     if (!hasPermission || !req.user.isAdmin) {

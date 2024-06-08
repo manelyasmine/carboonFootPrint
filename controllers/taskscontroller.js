@@ -1,5 +1,6 @@
 import task from "../models/tasksModel.js";
 import user from "../models/userModel.js";
+import target from "../models/targetModel.js";
 import mongoose from "mongoose";   
 import { check, validationResult } from 'express-validator';
 
@@ -120,11 +121,11 @@ const updateTask=async(req,res)=>{
       return res.status(400).json({ errors: errors.array() });
     } 
 
-    const { taskName, targetName, dueDate, userIds } = req.body;
-    const taskId = req.params.taskId;
+    const { taskName, targetName, dueDate, userIds,id } = req.body;
+    //const taskId = req.params.taskId;
 
     // Find the existing task by ID
-    const existingTask = await task.findById(taskId);
+    const existingTask = await task.findById(id);
     if (!existingTask) {
       return res.status(404).json({ error: "Task not found" });
     }
@@ -185,9 +186,27 @@ const getAllTasks=async(req,res,next)=>{
   console.log("get all tasks")
   try {
     // Retrieve all tasks from the database
-    const tasks = await task.find({});
+   // const tasks = await task.find({});
      
-    res.json(tasks);
+  /*  const tasks = await task.find().populate({
+    path: "targetName", // Assuming the field in Role that references users
+    model: target, // User model to populate
+    select: "name", // Exclude password field from user data
+  }); */
+  const tasks = await task.find({})
+  .populate({ path: "targetName", select: "name" })   // Select only the name field from target
+  .populate({ path: "assignedUser", select: "username email" }); // Select only the email field from assignedUser
+   
+
+   
+  const flatList = tasks.map(task => {
+    const { _id, taskName,  assignedUser, status, dueDate, createdBy, createdAt, updatedAt } = task;
+    const targetName = task.targetName ? task.targetName.name : null;
+    const usersIds = assignedUser ;
+    return { _id, taskName, targetName  , usersIds, status, dueDate, createdBy, createdAt, updatedAt };
+  });
+
+  res.json(flatList);
  
     next();
   } catch (error) {
