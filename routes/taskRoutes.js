@@ -11,7 +11,7 @@ import {
 } from "../middlewares/authMiddleware.js";
 
 router.route("/:userId").post(authenticate, checkPermissions(['write_task', 'create_task']), createTask);
-router.route("/:taskId").put(authenticate, checkPermissions(['write_task', 'create_task']), updateTask);
+router.route("/").put(authenticate, checkPermissions(['write_task', 'create_task']), updateTask);
 router.route("/:taskId").delete(authenticate, checkPermissions(['write_task', 'create_task']), deleteTask);
 router.route("/assign/:taskId").put(authenticate, checkPermissions(['write_task', 'create_task']), assignTask);
 router.route("/").get(authenticate, checkPermissions(['write_task', 'create_task']), getAllTasks);
