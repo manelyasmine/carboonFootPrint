@@ -11,7 +11,7 @@ const createTask = async (req, res) => {
     await check('taskName', 'Task name is required').notEmpty().run(req);
     await check('targetName', 'Target is required').notEmpty().run(req);
     await check('dueDate', 'Due Date is required').notEmpty().run(req);
-    await check('userIds', 'User IDs are required').notEmpty().run(req);
+    await check('usersIds', 'User IDs are required').notEmpty().run(req);
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -19,23 +19,22 @@ const createTask = async (req, res) => {
     } 
 
 
-    const { taskName, targetName, dueDate, userIds } = req.body;
+    const { taskName, targetName, dueDate, usersIds,createdBy } = req.body;
     const existingTask = await task.findOne({ taskName });
     if (existingTask) {
       return res.status(400).json({ error: "Task with this name already exists" });
     }
      // Validate that all userIds are valid users
-     const validUsers = await user.find({ _id: { $in: userIds } });
-     if (validUsers.length !== userIds.length) {
+    /*  const validUsers = await user.find({ _id: { $in: usersIds } });
+     if (validUsers.length !== usersIds.length) {
        return res.status(400).json({ error: "One or more user IDs are invalid" });
-     }
-
-    const createdBy = req.params.userId; // the userId of the creator is in req.params
+     } */
+ 
     const mytask = new task({
       taskName,
       targetName,
       dueDate,
-      assignedUser: userIds,
+      assignedUser: usersIds,
       createdBy
     }); 
     await mytask.save();
@@ -49,35 +48,34 @@ const createTask = async (req, res) => {
 const assignTask = async (req, res) => {
   try {
     // Validation
-    await check('taskId', 'Task ID is required').notEmpty().run(req);
-    await check('userIds', 'User IDs are required').isArray().withMessage('User IDs must be an array').run(req);
+    await check('id', 'Task ID is required').notEmpty().run(req);
+    await check('userIds', 'User IDs are required').notEmpty().run(req);
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     } 
-    const {userIds} = req.body;
-    const taskId = req.params.taskId;
+    const {usersIds,id} = req.body; 
     
     // Find the existing task by ID
-    const existingTask = await task.findById(taskId);
+    const existingTask = await task.findById(id);
     console.log("task ===>",task);
     if (!existingTask) {
       return res.status(404).json({ message: "Task not found" });
     }
 
     // Validate if all userIds exist in the database if provided
-    if (userIds) {
-      const validUsers = await user.find({ _id: { $in: userIds } });
+    if (usersIds) {
+      const validUsers = await user.find({ _id: { $in: usersIds } });
 
-      if (validUsers.length !== userIds.length) {
+      if (validUsers.length !== usersIds.length) {
         return res.status(400).json({ error: "One or more user IDs are invalid" });
       }
     }
 
     
-    if (userIds) existingTask.assignedUser = userIds;
-    await existingTask.save();
+    if (usersIds) {existingTask.assignedUser = usersIds;
+    await existingTask.save();}
 
     return res.status(200).json({ message: "Task assigned successfully" });
   } catch (error) {

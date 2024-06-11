@@ -1,12 +1,15 @@
 import express from "express";
 const router = express.Router();
-import { createCompany,addLocation ,editLocation , deleteLocation, getLocations} from "../controllers/companycontroller.js";
+import { createCompany,addLocation ,editLocation , deleteLocation, getLocations,getCompany} from "../controllers/companycontroller.js";
 import {
   authenticate,
   authorizedAsAdmin,
 } from "../middlewares/authMiddleware.js";
 
 router.route("/").post(authenticate, authorizedAsAdmin, createCompany);
+
+
+router.route("/").get(authenticate, authorizedAsAdmin, getCompany);
 
 router.route("/location/:id").put(authenticate,authorizedAsAdmin,addLocation);
 
