@@ -5,20 +5,20 @@ import mongoose from "mongoose";
 // ... other imports and validation (if needed)
 
 const createRole = async (req, res) => {
-  const { name, userIds, permissionNames } = req.body; // Assuming 'userIds' is an array of user IDs
+  const { name, usersIds, permissions } = req.body; // Assuming 'usersIds' is an array of user IDs
 
   try {
     // 1. Check if user IDs are provided
-    if (!userIds || !userIds.length) {
+    if (!usersIds || !usersIds.length) {
       return res.status(400).json({ message: 'Please provide user IDs to assign the role' });
     }
 
     // 2. Find all valid users (optional but recommended)
-    const users = await user.find({ _id: { $in: userIds } }); // Find users by IDs
+    const users = await user.find({ _id: { $in: usersIds } }); // Find users by IDs
 
     // 3. Create the new roleuse
-    const newRole = await Role.create({ name, permissions: permissionNames,users:users });
-    const updateResult = await user.updateMany({ _id: { $in: userIds } }, { role: newRole._id  });
+    const newRole = await Role.create({ name, permissions: permissions,users:users });
+    const updateResult = await user.updateMany({ _id: { $in: usersIds } }, { role: newRole._id  });
 
  
 
@@ -47,15 +47,15 @@ const getRoles=async(req,res)=>{
 }
 
 const updateRole = async (req, res) => {
-  const { roleId, name, userIds, permissionNames } = req.body;
+  const { roleId, name, usersIds, permissionNames } = req.body;
 
   try {
     if (!roleId) {
       return res.status(400).json({ message: 'Role ID is required' });
     }
 
-    if (!name && !userIds && !permissionNames) {
-      return res.status(400).json({ message: 'At least one update field is required (name, userIds, permissionNames)' });
+    if (!name && !usersIds && !permissionNames) {
+      return res.status(400).json({ message: 'At least one update field is required (name, usersIds, permissionNames)' });
     }
  const roleToUpdate = await Role.findById(roleId);
     if (!roleToUpdate) {
@@ -64,9 +64,9 @@ const updateRole = async (req, res) => {
     const updates = {};
     if (name) updates.name = name;
     if (permissionNames) updates.permissions = permissionNames;
-    if (userIds) 
+    if (usersIds) 
       {
-        const users = await user.find({ _id: { $in: userIds } }); // Find users by IDs
+        const users = await user.find({ _id: { $in: usersIds } }); // Find users by IDs
 
         updates.users=users;
       }
@@ -80,8 +80,8 @@ const updateRole = async (req, res) => {
       return res.status(500).json({ message: 'Error updating role' });
     }
  
-    if (userIds) {
-      const updatePromises = userIds.map(async (userId) => {
+    if (usersIds) {
+      const updatePromises = usersIds.map(async (userId) => {
         const userToUpdate = await user.findByIdAndUpdate(userId, { role: roleId }, { new: true });
         
         if (!userToUpdate) {

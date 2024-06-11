@@ -5,6 +5,17 @@ import Location from "../models/locationModel.js";
 
 
 
+const getCompany=async(req,res,next)=>{
+  try {
+    const latestCompany = await Company.findOne().sort({ createdAt: -1 });
+    res.json(latestCompany);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching the latest company' });
+  }
+}
+
+
+
 const createCompany = async (req, res, next) => {
   try {
     // Validate request body
@@ -173,4 +184,4 @@ const deleteLocation = async (req, res, next) => {
   }
 };
 
-export { createCompany,addLocation, editLocation , deleteLocation, getLocations };
+export { createCompany,addLocation, editLocation , deleteLocation, getLocations ,getCompany};
