@@ -2,30 +2,30 @@ import mongoose from "mongoose";
 const dataSchema = mongoose.Schema({
   date: {
     type: String,
-    required: true,
+    //required: true,
   },
 
   location: {
     type: String,
-    required: true,
+   // required: true,
   },
   category: {
     type: String,
-    required: true,
+    //required: true,
     ref: "user",
   },
   quantity: {
     type: String,
-    required: true,
+    //required: true,
     default: "0",
   },
   emission_tracker: {
     type: String,
-    required: true,
+    //required: true,
   },
   source: {
     type: String,
-    required: true,
+    //required: true,
   },
   // integration: {
   //   type: String,

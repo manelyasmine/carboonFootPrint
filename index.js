@@ -23,7 +23,7 @@ app.use(cors({
 
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
-app.use("/upload", uploadRoutes);
+app.use("/data", uploadRoutes);
 app.use("/target", targetRoutes);
 app.use("/company", companyRoutes);
 app.use("/report", reportRoutes);
