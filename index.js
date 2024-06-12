@@ -14,8 +14,6 @@ import companyRoutes from "./routes/companyRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import emissionRoutes from "./routes/emissionRoutes.js";
-import roleRoutes from "./routes/roleRoutes.js";
-import emissionRoutes from "./routes/emissionRoutes.js";
 import cors from 'cors'
 
 dotenv.config();
