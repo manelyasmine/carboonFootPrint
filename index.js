@@ -1,6 +1,8 @@
 import express from "express";
 
 //import errorHandler from '../middlewares/errorHandler';
+
+//import errorHandler from '../middlewares/errorHandler';
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
@@ -10,6 +12,8 @@ import uploadRoutes from "./routes/dataRoutes.js";
 import targetRoutes from "./routes/targetRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import roleRoutes from "./routes/roleRoutes.js";
+import emissionRoutes from "./routes/emissionRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import emissionRoutes from "./routes/emissionRoutes.js";
 import cors from 'cors'
@@ -31,6 +35,9 @@ app.use("/data", uploadRoutes);
 app.use("/target", targetRoutes);
 app.use("/company", companyRoutes);
 app.use("/report", reportRoutes);
+app.use("/role",roleRoutes);
+app.use('/emission',emissionRoutes);
+
 app.use("/role",roleRoutes);
 app.use('/emission',emissionRoutes);
 
