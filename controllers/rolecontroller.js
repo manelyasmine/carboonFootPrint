@@ -47,23 +47,23 @@ const getRoles=async(req,res)=>{
 }
 
 const updateRole = async (req, res) => {
-  const { roleId, name, usersIds, permissionNames } = req.body;
+  const { id, name, usersIds, permissions } = req.body;
 
   try {
-    if (!roleId) {
+    if (!id) {
       return res.status(400).json({ message: 'Role ID is required' });
     }
 
-    if (!name && !usersIds && !permissionNames) {
-      return res.status(400).json({ message: 'At least one update field is required (name, usersIds, permissionNames)' });
+    if (!name && !usersIds && !permissions) {
+      return res.status(400).json({ message: 'At least one update field is required (name, usersIds, permissions)' });
     }
- const roleToUpdate = await Role.findById(roleId);
+ const roleToUpdate = await Role.findById(id);
     if (!roleToUpdate) {
       return res.status(404).json({ message: 'Role not found' });
     }
     const updates = {};
     if (name) updates.name = name;
-    if (permissionNames) updates.permissions = permissionNames;
+    if (permissions) updates.permissions = permissions;
     if (usersIds) 
       {
         const users = await user.find({ _id: { $in: usersIds } }); // Find users by IDs
@@ -72,7 +72,7 @@ const updateRole = async (req, res) => {
       }
     // 4. Update Role with Mongoose `findOneAndUpdate`
     const updatedRole = await Role.findOneAndUpdate(
-      { _id: roleId },
+      { _id: id },
       updates,
       { new: true } // Return the updated document
     );
@@ -82,7 +82,7 @@ const updateRole = async (req, res) => {
  
     if (usersIds) {
       const updatePromises = usersIds.map(async (userId) => {
-        const userToUpdate = await user.findByIdAndUpdate(userId, { role: roleId }, { new: true });
+        const userToUpdate = await user.findByIdAndUpdate(userId, { role: id }, { new: true });
         
         if (!userToUpdate) {
           console.error(`Error updating user with ID: ${userId}`);
@@ -105,7 +105,7 @@ const deleteRole = async (req, res) => {
   const roleId = req.params.id;
   try { 
 
-    const userAdmin = await user.findById(req.body.user).select("-password");
+    const userAdmin = await user.findById(req.body.id).select("-password");
   
     if (!req.params.id) {
       return res.status(400).json({ message: 'Role ID is required' });
