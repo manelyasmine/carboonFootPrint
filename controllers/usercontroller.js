@@ -169,16 +169,17 @@ const getuserById = async (req, res) => {
 };
 const updateUserById = async (req, res) => {
   const myuser = await user.findById(req.params.id);
+  const data=req.body;
   if (myuser) {
-    myuser.username = req.body.username || myuser.username;
+    myuser.username = data.username || myuser.username;
    //dont give him right to change email even if he is admin
    // myuser.email = req.body.email || myuser.email;
-    myuser.isAdmin = Boolean(req.body.isAdmin);
+    //myuser.isAdmin = Boolean(req.body.isAdmin);
     //update role get all roles and change role to one of them
     //update status
-    myuser.status=req.body.status || myuser.status;
-    myuser.phone=req.body.phone || myuser.phone;
-    myuser.roles=req.body.roles || myuser.roles;
+    myuser.status=data.status || myuser.status;
+    myuser.phone=data.phone || myuser.phone;
+    myuser.roles=data.roles || myuser.roles;
     
 
     const updateduser = await myuser.save();
