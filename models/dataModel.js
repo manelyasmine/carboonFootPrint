@@ -27,6 +27,18 @@ const dataSchema = mongoose.Schema({
     type: String,
     //required: true,
   },
+  scope1: {
+    type: Number,
+    //required: true,
+  },
+  scope2: {
+    type: Number,
+    //required: true,
+  },
+  scope3: {
+    type: Number,
+    //required: true,
+  },
   // integration: {
   //   type: String,
   //   required: true,
