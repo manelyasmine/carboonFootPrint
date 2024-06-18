@@ -32,9 +32,9 @@ const createCompany = async (req, res, next) => {
 
     // Check if company already exists
     const existingCompany = await Company.findOne({ name });
-    if (existingCompany) {
+  /*   if (existingCompany) {
       return next(createError(400, 'Company already exists'));
-    }
+    } */
 
     // Create and save new company
     const myCompany = new Company({

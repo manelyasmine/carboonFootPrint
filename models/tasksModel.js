@@ -23,7 +23,8 @@ const taskSchema = mongoose.Schema(
     },
     dueDate:{
       type:Date,
-      required:true
+      required:true, 
+ 
     },
     createdBy:{
       type:mongoose.Schema.Types.ObjectId,

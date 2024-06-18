@@ -51,7 +51,7 @@ const companySchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'location',  
   }],
- 
+  createdAt: { type: Date, default: Date.now }
   
 
 });

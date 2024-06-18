@@ -52,12 +52,15 @@ const userSchema = mongoose.Schema(
       type:String,
       required:false,
     },
-    roles: {
+    role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Role',  
     },
-    companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' }
-
+    companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
+    profileImage: {
+      type: String, // Store the image URL or path
+      required: false,
+    },
   },
   { timestamps: true, strict : false}
 );

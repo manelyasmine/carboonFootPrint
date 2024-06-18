@@ -9,6 +9,7 @@ import {
   deleteUser,
   getuserById,
   updateUserById,
+  updateUserStatus,uploadImage
 } from "../controllers/usercontroller.js"; // Import from usercontroller.js
 import {
   authenticate,
@@ -19,22 +20,27 @@ const router = express.Router();
 router
   .route("/")
   .post(createUser)
-  .get(authenticate, authorizedAsAdmin, getalluser);
+  .put(updateUser)
+  .get(authenticate,  getalluser);
 router.post("/auth", loginUser);
 router.post("/logout", logoutUser);
 router
   .route("/profile")
   .get(authenticate, getprofile)
-  .put(authenticate, updateUser);
+  /* .put(authenticate, updateUser); */
 
 router
   .route('/:id')
-  .put( authenticate,updateUser);
+  
+  .patch(updateUserStatus);
 
 router
   .route("/:id")
-  .delete(authenticate, authorizedAsAdmin, deleteUser)
-  .get(authenticate, authorizedAsAdmin, getuserById)
-  .put(authenticate, authorizedAsAdmin, updateUserById);
+  .delete(authenticate,  deleteUser)
+  .get(authenticate,  getuserById)
+  .put(authenticate,  updateUserById);
+
+router.route("/profile/cover/").post(uploadImage);
+
 
 export default router;

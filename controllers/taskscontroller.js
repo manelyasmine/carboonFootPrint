@@ -3,7 +3,7 @@ import user from "../models/userModel.js";
 import target from "../models/targetModel.js";
 import mongoose from "mongoose";   
 import { check, validationResult } from 'express-validator';
-
+import moment from 'moment';
 
 const createTask = async (req, res) => {
   try {
@@ -48,13 +48,7 @@ const createTask = async (req, res) => {
 const assignTask = async (req, res) => {
   try {
     // Validation
-    await check('id', 'Task ID is required').notEmpty().run(req);
-    await check('userIds', 'User IDs are required').notEmpty().run(req);
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    } 
+  
     const {usersIds,id} = req.body; 
     
     // Find the existing task by ID
@@ -109,17 +103,8 @@ const taskCompleted = async (req, res) => {
 const updateTask=async(req,res)=>{
   try {
     // Validation
-    await check('taskName').optional().notEmpty().withMessage('Task name must not be empty').run(req);
-    await check('targetName').optional().notEmpty().withMessage('Target must not be empty').run(req);
-    await check('dueDate').optional().notEmpty().withMessage('Due Date must not be empty').run(req);
-    await check('userIds').optional().isArray().withMessage('User IDs must be an array').run(req);
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    } 
-
-    const { taskName, targetName, dueDate, userIds,id } = req.body;
+   
+    const { taskName, targetName, dueDate, usersIds,id } = req.body;
     //const taskId = req.params.taskId;
 
     // Find the existing task by ID
@@ -134,12 +119,12 @@ const updateTask=async(req,res)=>{
       if (taskNameExists) {
         return res.status(400).json({ error: "Task with this name already exists" });
       }
-    }
-
-    // Validate if all userIds exist in the database if provided
-    if (userIds) {
-      const validUsers = await user.find({ _id: { $in: userIds } });
-      if (validUsers.length !== userIds.length) {
+    } 
+    console.log("lenth of users",usersIds.length)
+    // Validate if all usersIds exist in the database if provided
+    if (usersIds) {
+      const validUsers = await user.find({ _id: { $in: usersIds } });
+      if (validUsers.length !== usersIds.length) {
         return res.status(400).json({ error: "One or more user IDs are invalid" });
       }
     }
@@ -148,7 +133,7 @@ const updateTask=async(req,res)=>{
     if (taskName) existingTask.taskName = taskName;
     if (targetName) existingTask.targetName = targetName;
     if (dueDate) existingTask.dueDate = dueDate;
-    if (userIds) existingTask.assignedUser = userIds;
+    if (usersIds) existingTask.assignedUser = usersIds;
     existingTask.updatedBy = req.user._id; // Assuming the userId of the updater is stored in req.user
 
     await existingTask.save();
@@ -180,17 +165,10 @@ const deleteTask = async (req, res) => {
   }
 };
 
-const getAllTasks=async(req,res,next)=>{
-  console.log("get all tasks")
+/* const getAllTasks=async(req,res,next)=>{
+ 
   try {
-    // Retrieve all tasks from the database
-   // const tasks = await task.find({});
-     
-  /*  const tasks = await task.find().populate({
-    path: "targetName", // Assuming the field in Role that references users
-    model: target, // User model to populate
-    select: "name", // Exclude password field from user data
-  }); */
+  
   const tasks = await task.find({})
   .populate({ path: "targetName", select: "name" })   // Select only the name field from target
   .populate({ path: "assignedUser", select: "username email" }); // Select only the email field from assignedUser
@@ -211,7 +189,85 @@ const getAllTasks=async(req,res,next)=>{
     console.error('Error fetching tasks:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
-}
+} */
+
+
+  const getAllTasks = async (req, res, next) => {
+    console.log("get all tasks");
+  
+    try {
+      const { page = 1, limit = 10, dueDate, search } = req.query;  
+      const defaultDate = moment().utc(); // Example default date (current day in UTC)
+      const targetDate = dueDate ? moment(dueDate).utc() : {};
+    console.log("targetDate",targetDate)
+      const searchFilter = search
+        ? {
+           
+
+           $or: [
+            { taskName: search }, // Exact match
+            { taskName: { $regex: new RegExp(search, "i") } }, // Case-insensitive partial match
+            {'targetName.name' :search},
+            { 'targetName.name': { $regex: new RegExp(search, "i") } }, // Case-insensitive partial match
+          
+          ]
+          }
+        : {}; 
+    // 4. Combine Filters
+   /*  const filter = {
+      ...searchFilter,
+      dueDate:{
+        $gte: targetDate.startOf('day').add(1, 'days').toDate(),
+        $lte: targetDate.endOf('day').toDate(),
+      
+    }
+    }; */
+
+    const filter = { ...searchFilter };
+    if (dueDate) {
+      filter.dueDate = {
+        $gte: moment(dueDate).utc().startOf('day').add(1, 'days').toDate(),
+        $lte: moment(dueDate).utc().endOf('day').add(1, 'days').toDate(),
+      };
+    }
+
+      console.log("parsedDueDate",filter )
+      // Pagination options (adjust as needed)
+      const skip = (page - 1) * limit;
+  
+      // Retrieve tasks with optional filtering and pagination
+      const tasks = await task.find(filter)
+        .skip(skip) // Skip tasks based on page and limit
+        .limit(limit) // Limit number of results
+        .populate({ path: "targetName", select: "name" }) // Select only the name field from target
+        .populate({ path: "assignedUser", select: "username email" }); // Select only the email field from assignedUser
+   
+      // Flatten and process tasks
+      const flatList = tasks.map((task) => {
+        console.log("get all tasks ",task)
+        const { _id, taskName, targetName, assignedUser, status, dueDate, createdBy, createdAt, updatedAt } = task;
+        const usersIds = assignedUser;
+        return { _id, taskName, targetName: targetName ? targetName.name : null, usersIds, status, dueDate, createdBy, createdAt, updatedAt };
+      });
+  
+      res.json(flatList);
+      next();
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
 
 
 const getMyTasks=async(req,res,next)=>{

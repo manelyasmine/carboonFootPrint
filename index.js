@@ -14,19 +14,21 @@ import companyRoutes from "./routes/companyRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import emissionRoutes from "./routes/emissionRoutes.js";
-import cors from 'cors'
-
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import multer from 'multer'
 dotenv.config();
 const port = process.env.PORT;
 connectDB();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({
   origin: 'http://localhost:3000', // Your Next.js frontend URL
   credentials: true,
 }))
-
+const upload = multer({ dest: 'Downloads/' });
 app.use("/api/users", userRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/data", uploadRoutes);
