@@ -50,15 +50,60 @@ const createData = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error => " + error });
   }
 };
+ 
+ 
 
 const getData = async (req, res) => {
   try {
-    const dataRes = await data.find({});
-    res.json(dataRes);
+    const { startFullDate, endFullDate, page, limit, search } = req.query;
+    console.log("startFullDate, endFullDate",startFullDate, endFullDate)
+    const searchFilter = {
+      ...(search && {
+        $or: [
+          { location: { $regex: search, $options: 'i' } }, // Case-insensitive partial match for location
+          { category: { $regex: search, $options: 'i' } }, // Case-insensitive partial match for category
+        ],
+      }),
+      ...(startFullDate && endFullDate && {
+        date: {
+          $gte: startFullDate, // Handle YYYY format
+          $lte: endFullDate, // Handle ISO 8601 format
+        },
+      }),
+    };
+
+    console.log("datacontroller searchfilter", searchFilter);
+
+    const total = await data.countDocuments(searchFilter);
+    const totalPages = Math.ceil(total / limit);
+    const pageMin = Math.min(Math.max(page, 1), totalPages);
+    const skip = (page - 1) * limit;
+
+    const dataemission = await data.find(searchFilter, {}) // Use searchFilter here
+     // .skip(skip) // Uncomment if pagination is needed
+      //.limit(limit); // Uncomment if pagination is needed
+
+    res.json({ dataemission, total, pageMin, totalPages });
   } catch (e) {
-    return res.status(400).json({ error: "Internal Server Error" });
+    return res.status(400).json({ error: "Internal Server Error" + e });
   }
 };
+
+ 
+
+ 
+
+function convertISODateToEpoch(isoDate) {
+  // Handle potential ISO 8601 parsing errors
+  try {
+    return new Date(isoDate).getTime();
+  } catch (error) {
+    console.error("Error parsing ISO 8601 date:", error);
+    // Handle the error appropriately, potentially returning a default value
+    return 0; // Or another suitable default
+  }
+}
+ 
 
 const updateData = async (req, res) => {
   console.log("req.params.id" + req.params.id);
@@ -98,20 +143,53 @@ const deleteData = async (req, res) => {
   }
 };
 
-const generateRow = async (req, res) => {
+function convertDateToEpoch(date) {
+  // Handle potential errors and different date formats
+  console.log("ccc",date)
+  try {
+    if (/^\d{4}$/.test(date)) { // Check for YYYY format
+      console.log("new Date(date, 0, 1).getTime()",new Date(date, 0, 1))
+      const dateFomrat = new Date(date, 0, 1); 
+      const year = dateFomrat.getFullYear();
+  const month = String(dateFomrat.getMonth() + 1).padStart(2, '0'); // Pad month with leading zero if needed
+  const day = String(dateFomrat.getDate()).padStart(2, '0'); // Pad day with leading zero if needed
+ 
+  return `${year}-${month}-${day}`;
+    }   else {
+      throw new Error("Invalid date format. Expected YYYY or YYYY-MM-DD.");
+    }
+  } catch (error) {
+    console.error("Error converting date to epoch:", error);
+    // Handle the error appropriately, potentially returning a default value
+    return 0; // Or another suitable default
+  }
+}
+
+ 
+
+ const generateRow = async (req, res) => {
   const rows = req.body;
   let i = 0;
+  
   const result = await Promise.all(
     rows.map(async (row) => {
       const { date, category, location } = row;
       // console.log(parseInt(date));
+       // Ensure date is a string to avoid potential errors
+       let formattedDate = null;
+       if (date !== null) {
+         formattedDate =  convertDateToEpoch((date));
+       }else{
+        formattedDate=NULL
+       }
+       console.log('formattedDate',formattedDate,new Date(formattedDate))
       try {
         // console.log('here'+i )
         i++;
-        console.log(date)
+        //console.log(date)
         const emission = await data.findOne({
           source: { $ne: "Bulk Upload" },
-          date:date,
+          date:formattedDate,
           category: category,
           location: location,
         });
@@ -140,7 +218,9 @@ const generateRow = async (req, res) => {
   );
   // console.log( result)
   res.status(200).json({ message: "success", data: result });
-};
+};    
+
+ 
 
 const formatYearToISO = (year) => {
   // Create a Date object for January 1st of the given year
