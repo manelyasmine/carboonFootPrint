@@ -38,8 +38,6 @@ app.use("/report", reportRoutes);
 app.use("/role",roleRoutes);
 app.use('/emission',emissionRoutes);
 
-app.use("/role",roleRoutes);
-app.use('/emission',emissionRoutes);
 
 
 //app.use(errorHandler);
