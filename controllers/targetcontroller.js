@@ -1,4 +1,5 @@
 import target from "../models/targetModel.js";
+import moment from 'moment';
 
 const createTarget = async (req, res) => {
   try {
@@ -42,14 +43,41 @@ const createTarget = async (req, res) => {
   }
 };
 
-const getTarget = async (req, res) => { 
-  try{ 
-    const targetRes = await target.find({});
-    res.json(targetRes);
-  }catch(e) {
+const getTarget = async (req, res) => {
+  console.log("getTarget")
+  try {
+    const { start,end,page, limit, search } = req.query;
+
+    const searchFilter = {
+      ...(search && {
+        $or: [
+          { name: { $regex: search, $options: 'i' } }, // Case-insensitive partial match for Name
+          { type: { $regex: search, $options: 'i' } }, // Case-insensitive partial match for Type
+        ],
+      }),
+      ...(start && end && {
+        baseYear: { $lte: Number(start) },
+        targetYear: { $gte: Number(end) }
+      }),
+    };
+
+    console.log("searchFilter getTarget===>", searchFilter);
+    const total = await target.countDocuments(searchFilter);
+    const totalPages = Math.ceil(total / limit);
+    const pageMin = Math.min(Math.max(page, 1), totalPages); // Clamp page between 1 and total pages
+
+    const skip = (page - 1) * limit;
+
+    const targets = await target.find(searchFilter, {}) // Use searchFilter here
+      //.skip(skip)
+     // .limit(limit);
+
+    res.json({ targets, total, pageMin, totalPages });
+  } catch (e) {
     return res.status(400).json({ error: "Internal Server Error" });
   }
-}
+};
+
 
 const updateTarget = async (req, res) => {
   try {
@@ -91,7 +119,7 @@ const updateTarget = async (req, res) => {
 
 const deleteTarget = async (req, res) => {
   const myTarget = await target.findById(req.params.id);
-  console.log("my myTarget",myTarget)
+  //console.log("my myTarget",myTarget)
   if (myTarget) {
     //deletion of target consiste of deleting all tasks related to this target and checking if target was created by admin
     await target.deleteOne({ _id: myTarget._id });

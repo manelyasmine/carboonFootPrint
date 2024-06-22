@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const dataSchema = mongoose.Schema({
   date: {
-    type: String,
+    type: Date,
     //required: true,
   },
 
