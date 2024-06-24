@@ -196,7 +196,7 @@ const deleteTask = async (req, res) => {
     console.log("get all tasks");
   
     try {
-      const { page = 1, limit = 10, dueDate, search } = req.query;  
+      const { page  , limit , dueDate, search } = req.query;  
       const defaultDate = moment().utc(); // Example default date (current day in UTC)
       const targetDate = dueDate ? moment(dueDate).utc() : {};
     console.log("targetDate",targetDate)
@@ -231,26 +231,36 @@ const deleteTask = async (req, res) => {
       };
     }
 
-      console.log("parsedDueDate",filter )
+     
+
+
+      const total = await task.countDocuments(filter);
+      const totalPages = Math.ceil(total / limit);
+      const pageMin = Math.min(Math.max(page, 1), totalPages); 
+
+      console.log("totalPages",total,totalPages,pageMin )
+
       // Pagination options (adjust as needed)
       const skip = (page - 1) * limit;
+      // Clamp page between 1 and total pages
   
       // Retrieve tasks with optional filtering and pagination
       const tasks = await task.find(filter)
-        .skip(skip) // Skip tasks based on page and limit
-        .limit(limit) // Limit number of results
+        .skip(skip)  
+        .limit(limit)  
         .populate({ path: "targetName", select: "name" }) // Select only the name field from target
         .populate({ path: "assignedUser", select: "username email" }); // Select only the email field from assignedUser
    
       // Flatten and process tasks
       const flatList = tasks.map((task) => {
-        console.log("get all tasks ",task)
+         
         const { _id, taskName, targetName, assignedUser, status, dueDate, createdBy, createdAt, updatedAt } = task;
         const usersIds = assignedUser;
         return { _id, taskName, targetName: targetName ? targetName.name : null, usersIds, status, dueDate, createdBy, createdAt, updatedAt };
       });
   
-      res.json(flatList);
+      
+    res.json({ tasks:flatList, total, pageMin, totalPages });
       next();
     } catch (error) {
       console.error('Error fetching tasks:', error);
