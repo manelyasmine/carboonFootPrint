@@ -56,8 +56,8 @@ const getTarget = async (req, res) => {
         ],
       }),
       ...(start && end && {
-        baseYear: { $lte: Number(start) },
-        targetYear: { $gte: Number(end) }
+        baseYear: { $gte: Number(start) },
+        targetYear: { $lte: Number(end) }
       }),
     };
 
@@ -69,8 +69,8 @@ const getTarget = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const targets = await target.find(searchFilter, {}) // Use searchFilter here
-      //.skip(skip)
-     // .limit(limit);
+      .skip(skip)
+      .limit(limit);
 
     res.json({ targets, total, pageMin, totalPages });
   } catch (e) {
