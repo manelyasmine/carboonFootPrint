@@ -39,5 +39,6 @@ targetSchema.pre('save', function (next) {
 });
 
 
+targetSchema.index({ name: 'text', description: 'text' });
 const target = mongoose.model("target", targetSchema);
 export default target;

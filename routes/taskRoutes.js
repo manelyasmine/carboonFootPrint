@@ -10,7 +10,7 @@ import {
   authorizedAsAdmin,checkPermissions
 } from "../middlewares/authMiddleware.js";
 
-router.route("/").post(authenticate, checkPermissions(['write_task', 'create_task']), createTask);
+router.route("/").post(authenticate, checkPermissions(['read_task','write_task', 'create_task']), createTask);
 router.route("/").put(authenticate, checkPermissions(['write_task', 'create_task']), updateTask);
 router.route("/:taskId").delete(authenticate, checkPermissions(['write_task', 'create_task']), deleteTask);
 router.route("/").patch(authenticate, checkPermissions(['write_task', 'create_task']), assignTask);

@@ -14,6 +14,7 @@ import companyRoutes from "./routes/companyRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import emissionRoutes from "./routes/emissionRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import multer from 'multer'
@@ -37,6 +38,7 @@ app.use("/company", companyRoutes);
 app.use("/report", reportRoutes);
 app.use("/role",roleRoutes);
 app.use('/emission',emissionRoutes);
+app.use("/search",searchRoutes);
 
 
 

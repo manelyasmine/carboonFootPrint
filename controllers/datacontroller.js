@@ -55,7 +55,7 @@ const createData = async (req, res) => {
 
 const getData = async (req, res) => {
   try {
-    const { startFullDate, endFullDate, page, limit, search } = req.query;
+    const { startFullDate, endFullDate, page, limit, search, column, operator, value  } = req.query;
     console.log("startFullDate, endFullDate",startFullDate, endFullDate)
     const searchFilter = {
       ...(search && {
@@ -71,6 +71,45 @@ const getData = async (req, res) => {
         },
       }),
     };
+    if (column && operator && value) {
+      const validColumns = ['location', 'category', 'quantity','emission_tracker','source','name'];
+      if (!validColumns.includes(column)) {
+        return res.status(400).json({ error: `Invalid column name: ${column}` });
+      }
+
+      const validOperators = ['equals', 'startsWith', 'endsWith', 'contains', 'greaterThan', 'lessThan'];
+      if (!validOperators.includes(operator)) {
+        return res.status(400).json({ error: `Invalid operator: ${operator}` });
+      }
+
+      let filterExpression;
+      switch (operator) {
+        case 'equals':
+          filterExpression = { [column]: value };
+          break;
+        case 'startsWith':
+          filterExpression = { [column]: { $regex: new RegExp(`^${value}`, "i") } };
+          break;
+        case 'endsWith':
+          filterExpression = { [column]: { $regex: new RegExp(`${value}$`, "i") } };
+          break;
+        case 'contains':
+          filterExpression = { [column]: { $regex: new RegExp(value, "i") } };
+          break;
+        case 'greaterThan':
+          filterExpression = { [column]: { $gt: value } };
+          break;
+        case 'lessThan':
+          filterExpression = { [column]: { $lt: value } };
+          break;
+        default:
+          // Handle unsupported operators (if applicable)
+          break;
+      }
+
+      searchFilter.$and = searchFilter.$and || [];
+      searchFilter.$and.push(filterExpression);
+    }
 
     console.log("datacontroller searchfilter", searchFilter);
 

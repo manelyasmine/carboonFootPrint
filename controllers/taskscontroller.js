@@ -196,78 +196,143 @@ const deleteTask = async (req, res) => {
     console.log("get all tasks");
   
     try {
-      const { page  , limit , dueDate, search } = req.query;  
-      const defaultDate = moment().utc(); // Example default date (current day in UTC)
+      const { /*page, limit,*/ dueDate, search, column, operator, value } = req.query;
       const targetDate = dueDate ? moment(dueDate).utc() : {};
-    console.log("targetDate",targetDate)
-      const searchFilter = search
-        ? {
-           
-
-           $or: [
-            { taskName: search }, // Exact match
-            { taskName: { $regex: new RegExp(search, "i") } }, // Case-insensitive partial match
-            {'targetName.name' :search},
-            { 'targetName.name': { $regex: new RegExp(search, "i") } }, // Case-insensitive partial match
-          
-          ]
-          }
-        : {}; 
-    // 4. Combine Filters
-   /*  const filter = {
-      ...searchFilter,
-      dueDate:{
-        $gte: targetDate.startOf('day').add(1, 'days').toDate(),
-        $lte: targetDate.endOf('day').toDate(),
-      
-    }
-    }; */
-
-    const filter = { ...searchFilter };
-    if (dueDate) {
-      filter.dueDate = {
-        $gte: moment(dueDate).utc().startOf('day').add(1, 'days').toDate(),
-        $lte: moment(dueDate).utc().endOf('day').add(1, 'days').toDate(),
-      };
-    }
-
-     
-
-
-      const total = await task.countDocuments(filter);
-      const totalPages = Math.ceil(total / limit);
-      const pageMin = Math.min(Math.max(page, 1), totalPages); 
-
-      console.log("totalPages",total,totalPages,pageMin )
-
-      // Pagination options (adjust as needed)
-      const skip = (page - 1) * limit;
-      // Clamp page between 1 and total pages
+      console.log("targetDate", targetDate);
   
-      // Retrieve tasks with optional filtering and pagination
-      const tasks = await task.find(filter)
-        .skip(skip)  
-        .limit(limit)  
+    /*   const searchFilter = search
+        ? {
+            $or: [
+              { taskName: search }, // Exact match
+              { taskName: { $regex: new RegExp(search, "i") } }, // Case-insensitive partial match
+             ],
+          }
+        : {}; */
+  const filter={}
+     /*  const filter = { ...searchFilter }; */
+      if (dueDate) {
+        filter.dueDate = {
+          $gte: moment(dueDate).utc().startOf('day').toDate(),
+          $lte: moment(dueDate).utc().endOf('day').toDate(),
+        };
+      }
+  
+      // Handle column-based filtering
+      if (column!="targetName" && operator && value) {
+        // Validate column name (optional, based on your needs)
+        const validColumns = ['taskName', 'dueDate', 'progress','status'];
+         if (!validColumns.includes(column)) {
+          return res.status(400).json({ error: `Invalid column name: ${column}` });
+        }  
+  
+        // Validate operator (optional, based on your needs)
+        const validOperators = ['equals', 'startsWith', 'endsWith', 'contains', 'greaterThan', 'lessThan'];
+        if (!validOperators.includes(operator)) {
+          return res.status(400).json({ error: `Invalid operator: ${operator}` });
+        }
+  
+        let filterExpression;
+        console.log("column,value", column, operator, value);
+        switch (operator) {
+          case 'equals':
+            filterExpression = { [column]: value };
+            break;
+          case 'startsWith':
+            filterExpression = { [column]: { $regex: new RegExp(`^${value}`, "i") } };
+            break;
+          case 'endsWith':
+            filterExpression = { [column]: { $regex: new RegExp(`${value}$`, "i") } };
+            break;
+          case 'contains':
+            filterExpression = { [column]: { $regex: new RegExp(value, "i") } };
+            break;
+          case 'greaterThan':
+            filterExpression = column === 'dueDate'
+              ? { [column]: { $gte: moment(value).utc().toDate() } }
+              : { [column]: { $gt: value } };
+            break;
+          case 'lessThan':
+            filterExpression = column === 'dueDate'
+              ? { [column]: { $lte: moment(value).utc().toDate() } }
+              : { [column]: { $lt: value } };
+            break;
+          default:
+            // Handle unsupported operators (if applicable)
+            break;
+        }
+  
+        filter.$and = filter.$and || []; // Create an $and array if it doesn't exist
+        filter.$and.push(filterExpression);
+      }
+     
+      // Pagination and retrieve tasks
+     
+      //const skip = (page - 1) * limit;
+      
+  
+      let tasks = await task.find(filter)
+        //.skip(skip)
+        //.limit(limit)
         .populate({ path: "targetName", select: "name" }) // Select only the name field from target
         .populate({ path: "assignedUser", select: "username email" }); // Select only the email field from assignedUser
-   
-      // Flatten and process tasks
+        
+        console.log("search==>",search)
+        if (search) {
+           console.log("if search",tasks)
+          tasks = tasks.filter(task => {
+            const match = (val) => new RegExp(val, "i").test(task.taskName);
+            const matchTarget = (val) => new RegExp(val, "i").test(task?.targetName.name);
+
+    return match(search) ||matchTarget(search) ||
+     task.taskName.toLowerCase().includes(search.toLowerCase()) ||
+
+     task?.targetName.name.toLowerCase().includes(search.toLowerCase())
+            // return task?.targetName.name==search || task.taskName==search
+          
+          })
+        }
+        
+        if (  (column === 'targetName' && operator && value)) {
+          console.log("if condition")
+          tasks = tasks.filter(task => {
+            const targetName = task.targetName && task.targetName.name ;
+            const match = (val) => new RegExp(val, "i").test(targetName);
+    
+            switch (operator) {
+              case 'equals':
+                return targetName === value;
+              case 'startsWith':
+                return targetName && match(`^${value}`);
+              case 'endsWith':
+                return targetName && match(`${value}$`);
+              case 'contains':
+                return targetName && match(value);
+              default:
+                return true;
+            }
+          });
+        }
+      
+     /*    const targetNameFind=await target.findOne({"name":value})
+      console.log("tar",targetNameFind) */
       const flatList = tasks.map((task) => {
-         
         const { _id, taskName, targetName, assignedUser, status, dueDate, createdBy, createdAt, updatedAt } = task;
         const usersIds = assignedUser;
         return { _id, taskName, targetName: targetName ? targetName.name : null, usersIds, status, dueDate, createdBy, createdAt, updatedAt };
-      });
-  
-      
-    res.json({ tasks:flatList, total, pageMin, totalPages });
+      }); 
+      const total = await flatList.length;
+     // const totalPages = Math.ceil(total / limit);
+      //const pageMin = Math.min(Math.max(page, 1), totalPages);
+     
+     // console.log("totalPages", total, totalPages, pageMin,flatList);
+      res.json({ tasks: flatList, total/* , pageMin, totalPages  */});
       next();
     } catch (error) {
       console.error('Error fetching tasks:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   };
-
+  
 
 
 
