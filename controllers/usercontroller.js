@@ -26,6 +26,7 @@ const createUser = async (req, res) => {
     lastname,
     phone,
     password: hashedPassword,
+    isAdmin: true,
   });
   try {
     await newuser.save();

@@ -39,6 +39,8 @@ const taskSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+// Create a text index on the fields you want to search
+taskSchema.index({ taskName: 'text', description: 'text' });
 const task = mongoose.model("task", taskSchema);
 
 export default task;
