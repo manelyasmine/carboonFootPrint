@@ -51,6 +51,10 @@ const companySchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'location',  
   }],
+  profileImage: {
+    type: String, // Store the image URL or path
+    required: false,
+  },
   createdAt: { type: Date, default: Date.now }
   
 

@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import { createCompany,addLocation ,editLocation , deleteLocation, getLocations,getCompany} from "../controllers/companycontroller.js";
+import { createCompany,addLocation ,editLocation , deleteLocation, getLocations,getCompany, uploadImage, getImage} from "../controllers/companycontroller.js";
 import {
   authenticate,
   authorizedAsAdmin,
@@ -18,5 +18,8 @@ router.route("/location/:id").get(authenticate,authorizedAsAdmin,getLocations);
 router.route("/:companyId/location/:locationId").put(authenticate,authorizedAsAdmin,editLocation);
 
 router.route("/:companyId/location/:locationId").delete(authenticate,authorizedAsAdmin,deleteLocation);
+
+router.route("/:id/image").post(authenticate,authorizedAsAdmin,uploadImage);
+router.route("/:id/image").get(authenticate,authorizedAsAdmin,getImage);
 
 export default router;

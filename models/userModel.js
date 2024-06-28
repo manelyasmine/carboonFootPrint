@@ -61,6 +61,10 @@ const userSchema = mongoose.Schema(
       type: String, // Store the image URL or path
       required: false,
     },
+    coverImage: {
+      type: String, // Store the image URL or path
+      required: false,
+    },
   },
   { timestamps: true, strict : false}
 );
