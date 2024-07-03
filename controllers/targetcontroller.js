@@ -1,36 +1,41 @@
 import target from "../models/targetModel.js";
-import moment from 'moment';
-
+import moment from "moment";
+import { createNotification } from "./notificationcontroller.js";
 const createTarget = async (req, res) => {
   try {
-    const { name, type,emissionReduction,baseYear,targetYear } = req.body;
+    const { name, type, emissionReduction, baseYear, targetYear } = req.body;
     if (!name) {
-     // res.json({ error: "name is required" });
-     return res.status(400).json({ error: "Name is required" }); // 400 for Bad Request
-
+      // res.json({ error: "name is required" });
+      return res.status(400).json({ error: "Name is required" }); // 400 for Bad Request
     }
     const existingT = await target.findOne({ name });
     if (existingT) {
-      return res.status(409).json({ error: "Target with this name already exists" }); //409 for existing resource
-      
+      return res
+        .status(409)
+        .json({ error: "Target with this name already exists" }); //409 for existing resource
     }
     if (baseYear >= targetYear) {
-      return res.status(400).json({ error: "Base year must be less than target year" });
+      return res
+        .status(400)
+        .json({ error: "Base year must be less than target year" });
     }
-
 
     const newTarget = new target({
       name,
       type,
       emissionReduction,
       baseYear,
-      targetYear
+      targetYear,
     });
 
     await newTarget.save();
+    await createNotification({
+      body: { status: "SENT", message: "created new taget", user:req.user },
+      res
+    });
     res.json(newTarget);
   } catch (error) {
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const validationErrors = {};
       for (const field in error.errors) {
         validationErrors[field] = error.errors[field].message;
@@ -44,21 +49,22 @@ const createTarget = async (req, res) => {
 };
 
 const getTarget = async (req, res) => {
-  console.log("getTarget")
+  console.log("getTarget");
   try {
-    const { start,end,page, limit, search } = req.query;
+    const { start, end, page, limit, search } = req.query;
 
     const searchFilter = {
       ...(search && {
         $or: [
-          { name: { $regex: search, $options: 'i' } }, // Case-insensitive partial match for Name
-          { type: { $regex: search, $options: 'i' } }, // Case-insensitive partial match for Type
+          { name: { $regex: search, $options: "i" } }, // Case-insensitive partial match for Name
+          { type: { $regex: search, $options: "i" } }, // Case-insensitive partial match for Type
         ],
       }),
-      ...(start && end && {
-        baseYear: { $lte: Number(start) },
-        targetYear: { $gte: Number(end) }
-      }),
+      ...(start &&
+        end && {
+          baseYear: { $lte: Number(start) },
+          targetYear: { $gte: Number(end) },
+        }),
     };
 
     console.log("searchFilter getTarget===>", searchFilter);
@@ -68,16 +74,15 @@ const getTarget = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const targets = await target.find(searchFilter, {}) // Use searchFilter here
-      //.skip(skip)
-     // .limit(limit);
+    const targets = await target.find(searchFilter, {}); // Use searchFilter here
+    //.skip(skip)
+    // .limit(limit);
 
     res.json({ targets, total, pageMin, totalPages });
   } catch (e) {
     return res.status(400).json({ error: "Internal Server Error" });
   }
 };
-
 
 const updateTarget = async (req, res) => {
   try {
@@ -86,15 +91,15 @@ const updateTarget = async (req, res) => {
     if (!name) {
       return res.status(400).json({ error: "Name is required" });
     }
-//Using findByIdAndUpdate simplifies the code by combining searching and updating into one operation.
+    //Using findByIdAndUpdate simplifies the code by combining searching and updating into one operation.
     const updatedTarget = await target.findOneAndUpdate(
       { name },
       {
         emissionReduction: emissionReduction,
-        type:type,
-        baseYear:baseYear,
-        targetYear:targetYear,
-        updatedAt:new Date(),
+        type: type,
+        baseYear: baseYear,
+        targetYear: targetYear,
+        updatedAt: new Date(),
       },
       { new: true } // The new: true option ensures you always get the latest version of the target in the response.
     );
@@ -106,10 +111,10 @@ const updateTarget = async (req, res) => {
     res.json({
       _id: updatedTarget._id,
       type: updatedTarget.type,
-      emissionReduction:emissionReduction,
+      emissionReduction: emissionReduction,
       baseYear: updatedTarget.baseYear,
       targetYear: updatedTarget.targetYear,
-      updatedAt:updatedTarget.updatedAt,
+      updatedAt: updatedTarget.updatedAt,
     });
   } catch (error) {
     console.error(error);
@@ -130,7 +135,5 @@ const deleteTarget = async (req, res) => {
   }
 };
 ///tasks/:id
-const detailsTarget=async (req,res)=>{
-
-}
-export { createTarget, updateTarget,deleteTarget,detailsTarget , getTarget };
+const detailsTarget = async (req, res) => {};
+export { createTarget, updateTarget, deleteTarget, detailsTarget, getTarget };

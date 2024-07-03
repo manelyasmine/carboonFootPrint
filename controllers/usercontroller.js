@@ -4,6 +4,9 @@ import user from "../models/userModel.js";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
+import { io } from "../index.js";
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -91,7 +94,7 @@ const getalluser = async (req, res) => {
   try {
     // Fetch all users and populate the 'roles' field with role details
     const users = await user.find({}).populate("role");
-
+    io.emit('notification', { message: 'All users called created!', user });
     // Respond with the users including their role details
     res.json(users);
   } catch (error) {
