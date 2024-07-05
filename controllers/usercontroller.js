@@ -65,8 +65,6 @@ const loginUser = async (req, res) => {
           isAdmin: existingUser.isAdmin,
           coverImage:  existingUser.coverImage,
           profileImage:  existingUser.profileImage
-          coverImage:  existingUser.coverImage,
-          profileImage:  existingUser.profileImage
         });
       } else {
         return res.status(401).json({ error: "Invalid email or password" });
@@ -97,7 +95,6 @@ const logoutUser = async (req, res) => {
 const getalluser = async (req, res) => {
   try {
     // Fetch all users and populate the 'roles' field with role details
-    const users = await user.find({}).populate("role");
     const users = await user.find({}).populate("role");
 
     // Respond with the users including their role details

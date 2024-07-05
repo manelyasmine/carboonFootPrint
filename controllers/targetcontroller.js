@@ -338,7 +338,6 @@ const getTarget = async (req, res) => {
     return res.status(400).json({ error: "Internal Server Error" });
   }
 }; */
-}; */
 
 
 const updateTarget = async (req, res) => {
