@@ -211,12 +211,19 @@ const deleteLocation = async (req, res, next) => {
     next(createError(500, error.message));
   }
 };
+const uploadImage = async (req, res, next) => {
+};
 
+const saveImage = async (req, company, next) => {
+};
+
+const getImage = async (req, res) => {
+};
 export {
   createCompany,
   addLocation,
   editLocation,
   deleteLocation,
   getLocations,
-  getCompany,
+  getCompany,uploadImage,saveImage,getImage
 };

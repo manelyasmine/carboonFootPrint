@@ -9,7 +9,7 @@ import {
   deleteUser,
   getuserById,
   updateUserById,
-  updateUserStatus,uploadImage
+  updateUserStatus,uploadImage,getImage
 } from "../controllers/usercontroller.js"; // Import from usercontroller.js
 import {
   authenticate,
@@ -39,8 +39,9 @@ router
   .delete(authenticate,  deleteUser)
   .get(authenticate,  getuserById)
   .put(authenticate,  updateUserById);
+ 
 
-router.route("/profile/cover/").post(uploadImage);
-
+router.route("/profile/cover/:id").post(uploadImage);
+router.route("/profile/images/:id").get(getImage);
 
 export default router;
