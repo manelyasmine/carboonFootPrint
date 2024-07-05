@@ -45,7 +45,10 @@ router
   .get(authenticate,  getuserById)
   .put(authenticate,  updateUserById);
  
+ 
 
+router.route("/profile/cover/:id").post(uploadImage);
+router.route("/profile/images/:id").get(getImage);
 router.route("/profile/cover/:id").post(uploadImage);
 router.route("/profile/images/:id").get(getImage);
 

@@ -208,6 +208,11 @@ const deleteLocation = async (req, res, next) => {
     next(createError(500, error.message));
   }
 };
+const uploadImage = async (req, res, next) => {
+};
+
+const saveImage = async (req, company, next) => {
+};
 
 const uploadImage = async (req, res, next) => {
   try {
