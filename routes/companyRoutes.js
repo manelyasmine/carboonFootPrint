@@ -1,6 +1,8 @@
 import express from "express";
 const router = express.Router();
-import { createCompany,addLocation ,editLocation , deleteLocation, getLocations,getCompany, uploadImage, getImage} from "../controllers/companycontroller.js";
+import { createCompany,addLocation ,
+  editLocation , deleteLocation, getLocations,
+  getCompany,uploadImage, getImage} from "../controllers/companycontroller.js";
 import {
   authenticate,
   authorizedAsAdmin,

@@ -44,10 +44,9 @@ router
   .delete(authenticate,  deleteUser)
   .get(authenticate,  getuserById)
   .put(authenticate,  updateUserById);
+ 
 
 router.route("/profile/cover/:id").post(uploadImage);
 router.route("/profile/images/:id").get(getImage);
-
-
 
 export default router;

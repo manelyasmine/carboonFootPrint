@@ -26,7 +26,6 @@ const createUser = async (req, res) => {
     lastname,
     phone,
     password: hashedPassword,
-    isAdmin: true,
   });
   try {
     await newuser.save();
@@ -95,7 +94,7 @@ const getalluser = async (req, res) => {
   try {
     // Fetch all users and populate the 'roles' field with role details
     const users = await user.find({}).populate("role");
-    io.emit('notification', { message: 'All users called created!', user });
+
     // Respond with the users including their role details
     res.json(users);
   } catch (error) {
@@ -120,10 +119,19 @@ const getprofile = async (req, res) => {
 };
 
 const updateUserStatus = async (req, res) => {
+const updateUserStatus = async (req, res) => {
   const myuser = req.params.id
     ? await user.findById(req.params.id)
     : await user.findById(req.user._id);
+    ? await user.findById(req.params.id)
+    : await user.findById(req.user._id);
   //const myuser = await user.findById(req.params.id);
+  if (myuser) {
+    myuser.status =
+      myuser.status == "active"
+        ? (myuser.status = "desactive")
+        : (myuser.status = "active");
+
   if (myuser) {
     myuser.status =
       myuser.status == "active"

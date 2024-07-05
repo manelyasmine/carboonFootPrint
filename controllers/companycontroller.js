@@ -269,6 +269,8 @@ const getImage = async (req, res) => {
   }
 };
 
+const getImage = async (req, res) => {
+};
 export {
   createCompany,
   addLocation,
