@@ -2,6 +2,7 @@ import Company from "../models/companyModel.js";
 import { check, validationResult } from "express-validator";
 import createError from "http-errors";
 import Location from "../models/locationModel.js";
+import { handleSendNotif } from "../middlewares/notifHandler.js";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -25,6 +26,7 @@ const createCompany = async (req, res, next) => {
     await check("email", "Email is not valid").isEmail().run(req);
     await check("website", "Website is not valid").isURL().run(req);
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
       return next(createError(400, { errors: errors.array() }));
     }
@@ -59,7 +61,7 @@ const createCompany = async (req, res, next) => {
       description,
     });
     await myCompany.save();
-
+    await handleSendNotif("created new company", req, res);
     res.status(201).json(myCompany);
   } catch (error) {
     next(createError(500, error.message));
@@ -99,8 +101,8 @@ const addLocation = async (req, res, next) => {
       postalCode,
       country,
     });
+    await handleSendNotif("created new location", req , res);
     await newLocation.save();
-    console.log("company locations===>", companyExsit.locations, newLocation);
     companyExsit.locations.push(newLocation);
 
     // Save the updated company
@@ -168,7 +170,7 @@ const editLocation = async (req, res, next) => {
 
     // Save the updated company
     await company.save();
-
+    await handleSendNotif("edited location", req , res);
     res.status(200).json({ message: "Location updated successfully", company });
   } catch (error) {
     next(createError(500, error.message));
@@ -200,7 +202,7 @@ const deleteLocation = async (req, res, next) => {
 
     // Save the updated company
     await company.save();
-
+    await handleSendNotif("deleted location", req , res);
     res.status(200).json({ message: "Location deleted successfully", company });
   } catch (error) {
     next(createError(500, error.message));
@@ -221,7 +223,7 @@ const uploadImage = async (req, res, next) => {
 
     if (req.is("multipart/form-data")) {
       saveImage(req, company, next);
-
+      await handleSendNotif("uploaded new image for the company", req , res);
       res.status(200).json({ message: "Image Uploaded" });
     }
   } catch (error) {
@@ -250,11 +252,11 @@ const saveImage = async (req, company, next) => {
 };
 
 const getImage = async (req, res) => {
-  console.log(req.params.id)
+  console.log(req.params.id);
   const company = await Company.findById(req.params.id);
   if (!company) {
     res.status(404).json({ message: "company not found " });
-    return
+    return;
   }
 
   const imgPath = company.profileImage;
@@ -275,5 +277,5 @@ export {
   getLocations,
   getCompany,
   uploadImage,
-  getImage
+  getImage,
 };

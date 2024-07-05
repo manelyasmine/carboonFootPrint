@@ -32,7 +32,6 @@ export const getAllNotificationSettings = async (req, res) => {
 
 // READ ONE
 export const getOneNotificationSettings = async (req, res) => {
-  console.log('why is it here')
   try {
     const settings = await notificationsettings.findById(req.params.id);
     if (!settings) return res.status(404).json({ error: "Settings not found" });
@@ -44,8 +43,6 @@ export const getOneNotificationSettings = async (req, res) => {
 
 export const getOneByUserNotificationSettings = async (req, res) => {
   try {
-    console.log('jere')
-    const currentUser = await user.findById(req.user._id);
     const settings = await notificationsettings.find({ user: req.user._id });
     if (!settings) return res.status(404).json({ error: "Settings not found" });
     res.json(settings);

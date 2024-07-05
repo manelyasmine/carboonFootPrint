@@ -5,9 +5,7 @@ import user from "../models/userModel.js";
 export const createNotification = async (req, res) => {
   try {
     // Create and save new notificatio
-    console.log(req.body.user._id);
     const userid = req.user?._id || req.body.user._id;
-    console.log(userid);
     const currentUser = await user.findById(userid);
     const newNotif = new notification({ ...req.body, user: currentUser });
     await newNotif.save();
@@ -25,8 +23,8 @@ export const createNotification = async (req, res) => {
 
 export const getAllNotificaitons = async (req, res) => {
   try {
-    const allNotifs = await notification.find({}).populate('user');
-    res.status(200).json(allNotifs);
+    const allNotifs = await notification.find({}).populate("user").sort({ created_at: 'asc' });
+    res.status(200).json(allNotifs.reverse());
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -54,6 +52,24 @@ export const updateNotification = async (req, res) => {
       return;
     }
     res.status(404).json({ error: "Notification not found" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const updateBulkNotifications = async (req, res) => {
+  try {
+    await notification
+      .updateMany(
+        { _id: { $in: req.body.notificationIds } }, // Filter
+        { $set: { status: "SEEN" } } // Update
+      )
+      .then((result) => {
+        res.status(200).json({ message: "Notification Updated" });
+      })
+      .catch((err) => {
+        res.status(404).json({ error: "Notification not found" });
+      });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

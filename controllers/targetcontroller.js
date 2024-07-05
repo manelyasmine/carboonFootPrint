@@ -1,6 +1,6 @@
 import target from "../models/targetModel.js";
-import moment from "moment";
-import { createNotification } from "./notificationcontroller.js";
+import { handleSendNotif } from "../middlewares/notifHandler.js";
+
 const createTarget = async (req, res) => {
   try {
     const { name, type, emissionReduction, baseYear, targetYear } = req.body;
@@ -29,10 +29,12 @@ const createTarget = async (req, res) => {
     });
 
     await newTarget.save();
-    await createNotification({
-      body: { status: "SENT", message: "created new taget", user:req.user },
-      res
-    });
+
+    await handleSendNotif("created new target", req , res);
+    // await createNotification({
+    //   body: { status: "SENT", message: "created new taget", user: req.user },
+    //   res,
+    // });
     res.json(newTarget);
   } catch (error) {
     if (error.name === "ValidationError") {
@@ -42,14 +44,12 @@ const createTarget = async (req, res) => {
       }
       return res.status(400).json({ error: validationErrors });
     } else {
-      console.error(error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   }
 };
 
 const getTarget = async (req, res) => {
-  console.log("getTarget");
   try {
     const { start, end, page, limit, search } = req.query;
 
@@ -67,7 +67,6 @@ const getTarget = async (req, res) => {
         }),
     };
 
-    console.log("searchFilter getTarget===>", searchFilter);
     const total = await target.countDocuments(searchFilter);
     const totalPages = Math.ceil(total / limit);
     const pageMin = Math.min(Math.max(page, 1), totalPages); // Clamp page between 1 and total pages
@@ -108,6 +107,7 @@ const updateTarget = async (req, res) => {
       return res.status(404).json({ error: "Target not found" });
     }
 
+    await handleSendNotif("Updated target", req , res);
     res.json({
       _id: updatedTarget._id,
       type: updatedTarget.type,
@@ -117,23 +117,23 @@ const updateTarget = async (req, res) => {
       updatedAt: updatedTarget.updatedAt,
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 const deleteTarget = async (req, res) => {
+
   const myTarget = await target.findById(req.params.id);
-  //console.log("my myTarget",myTarget)
   if (myTarget) {
     //deletion of target consiste of deleting all tasks related to this target and checking if target was created by admin
     await target.deleteOne({ _id: myTarget._id });
+    await handleSendNotif("deleted target", req , res);
     res.json({ message: "Target deleted" });
   } else {
-    res.status(404);
-    throw new Error("Target not found  ");
+    res.status(404).json({ error: "Target not found" });
   }
 };
+
 ///tasks/:id
 const detailsTarget = async (req, res) => {};
 export { createTarget, updateTarget, deleteTarget, detailsTarget, getTarget };

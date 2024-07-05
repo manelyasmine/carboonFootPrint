@@ -18,9 +18,16 @@ import notificatioRoutes from "./routes/notifcationRoutes.js"
 import notificationsettings from "./routes/notifcationSettingsRoutes.js";
 import cors from "cors";
 import bodyParser from "body-parser";
-
+import path from "path";
 import { createServer } from "http";
 import { Server } from "socket.io";
+
+
+import { fileURLToPath } from "url";
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const port = process.env.PORT;
@@ -65,6 +72,7 @@ app.get("/api/notify", (req, res) => {
 
 // routes for apis
 
+app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use("/api/users", userRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/data", uploadRoutes);
