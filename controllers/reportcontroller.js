@@ -3,18 +3,27 @@ import user from "../models/userModel.js";
 
 const createReport = async (req, res) => {
   try {
-    const { name } = req.body;
-    const myuser = await user.findById(req.user._id);
+    const newReport = new report({
+      name: req.body.name,
+      period: req.body.period,
+      createdBy: req.body.createdBy,
+      createdAt:new Date(),
+      status:req.body.status,
+      
+    });
 
-    const myreport = await new report({
-      name,
-      createdBy: myuser._id,
-    }).save();
+    const savedReport = await newReport.save();
 
-    res.json(myreport);
+    // Logic to generate and store the PDF file (replace with your implementation)
+    const pdfPath = "/public/report/" + savedReport._id + ".pdf";
+
+    savedReport.downloadURL = pdfPath;
+    await savedReport.save(); // Update report with download URL
+
+    res.status(201).json(savedReport); // Report created successfully
   } catch (error) {
-    console.log(error);
-    return res.status(400).json(error);
+    console.error(error);
+    res.status(500).json({ message: "Error creating report" });
   }
 };
 

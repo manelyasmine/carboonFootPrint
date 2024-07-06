@@ -74,6 +74,7 @@ app.get("/api/notify", (req, res) => {
 // routes for apis
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/public/report', express.static(path.join(__dirname, 'public')));
 app.use("/api/users", userRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/data", uploadRoutes);
