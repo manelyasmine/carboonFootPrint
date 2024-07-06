@@ -7,12 +7,16 @@ const dataSchema = mongoose.Schema({
 
   location: {
     type: String,
-   // required: true,
+    // required: true,
   },
   category: {
     type: String,
     //required: true,
     ref: "user",
+  },
+  sub_category: {
+    type: String,
+    //required: true,
   },
   quantity: {
     type: String,
@@ -39,6 +43,10 @@ const dataSchema = mongoose.Schema({
     type: Number,
     //required: true,
   },
+  unit: {
+    type: Number,
+  },
+
   // integration: {
   //   type: String,
   //   required: true,
