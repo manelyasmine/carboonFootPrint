@@ -1,9 +1,9 @@
 import report from "../models/reportModel.js";
 import user from "../models/userModel.js";
 
-
 const createReport = async (req, res) => {
-  console.log("report", req);
+  const filePath = req.file.path;
+  console.log(filePath)
 
   try {
     const newReport = new report({
@@ -13,6 +13,7 @@ const createReport = async (req, res) => {
       createdBy: req.body.createdBy,
       createdAt: new Date(),
       status: req.body.status || 'failed',
+      downloadURL: filePath
     });
 
     const savedReport = await newReport.save();
@@ -33,7 +34,7 @@ const createReport = async (req, res) => {
     res.status(201).json(savedReport); // Report created successfully
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error creating report" }); // More specific error message later
+    res.status(500).json({ error: "Error creating report" }); // More specific error message later
   }
 };
 
