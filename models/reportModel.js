@@ -6,7 +6,11 @@ const reportSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    period: {
+    startDate: {
+      type: String,
+      required: true,
+    },
+    endDate: {
       type: String,
       required: true,
     },
