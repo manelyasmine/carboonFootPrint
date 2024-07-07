@@ -1,5 +1,7 @@
 import csvParser from "csv-parser";
-import data from "../models/dataModel.js";
+import data from "../models/dataModel.js";  
+
+import emission from "../models/EmissionFactorModel.js"; 
 
 const uploadFile = (req, res) => {
   const results = [];
@@ -204,60 +206,118 @@ function convertDateToEpoch(date) {
   }
 }
 
- 
+const generateRow = async (req, res) => {
+  try {
+    const rows = req.body;
 
- const generateRow = async (req, res) => {
-  const rows = req.body;
-  let i = 0;
-  
-  const result = await Promise.all(
-    rows.map(async (row) => {
-      const { date, category, location } = row;
-      // console.log(parseInt(date));
-       // Ensure date is a string to avoid potential errors
-       let formattedDate = null;
-       if (date !== null) {
-         formattedDate =  convertDateToEpoch((date));
-       }else{
-        formattedDate=NULL
-       }
-       console.log('formattedDate',formattedDate,new Date(formattedDate))
-      try {
-        // console.log('here'+i )
-        i++;
-        //console.log(date)
-        const emission = await data.findOne({
-          source: { $ne: "Bulk Upload" },
-          date:formattedDate,
-          category: category,
-          location: location,
+    // Debug: Log the incoming rows
+    console.log("Incoming rows:", rows);
+
+    const result = await Promise.all(
+      rows.map(async (row) => {
+        const { date, category, location } = row;
+
+        // Debug: Log the location and category being queried
+        console.log("Querying for location:", location, "and category:", category);
+
+        // Trim the location and category values to avoid leading/trailing whitespaces
+        const trimmedLocation = location.trim();
+        const trimmedCategory = category.trim();
+
+        // Find documents where the location and category fields include the specified values (case-insensitive)
+        const emissionRow = await emission.findOne({
+          location: { $regex: trimmedLocation, $options: "i" },
+          category: { $regex: trimmedCategory, $options: "i" }
         });
-        if (emission) {
+
+        // Debug: Log the query result
+        console.log("Query result for location and category:", trimmedLocation, trimmedCategory, emissionRow);
+
+        if (emissionRow) {
           return {
             ...row,
-            emission_tracker: emission.emission_tracker,
-            scope1: emission.scope1,
-            scope2: emission.scope2,
-            scope3: emission.scope3,
+            emission_tracker: emissionRow.emission_tracker,
+            scope1: emissionRow.scope1,
+            scope2: emissionRow.scope2,
+            scope3: emissionRow.scope3,
           };
         } else {
+          // Handle missing emission data (optional: log or set defaults)
+          console.warn("Emission not found for location and category:", location, category);
           return {
             ...row,
             emission_tracker: 0,
             scope1: 0,
             scope2: 0,
             scope3: 0,
-          };
+          }; // Or set appropriate default values
         }
-      } catch (error) {
-        console.log("errot" + error);
-        // res.status(500).send("Server error");
-      }
-    })
-  );
-  // console.log( result)
-  res.status(200).json({ message: "success", data: result });
-};    
+      })
+    );
+
+    res.status(200).json({ message: "success", data: result });
+  } catch (error) {
+    console.error("Error generating rows:", error);
+    res.status(500).send("Server error: " + error.message); // More descriptive message
+  }
+};
+
+
+
+
+/* const generateRow = async (req, res) => {
+  try {
+    const rows = req.body;
+
+    // Debug: Log the incoming rows
+    console.log("Incoming rows:", rows);
+
+    const result = await Promise.all(
+      rows.map(async (row) => {
+        const { date, category, location } = row;
+
+        // Debug: Log the location being queried
+        console.log("Querying for location:", location);
+
+        // Trim the location value to avoid leading/trailing whitespaces
+        const trimmedlocation = location.trim();
+
+        // Find the first matching document by location
+        const emission = await data.findOne({ Location: trimmedlocation });
+
+        // Debug: Log the query result
+        console.log("Query result for location:", trimmedlocation, emission);
+
+        if (emission) {
+          return {
+            ...row,
+            emission_tracker: emission.emission_tracker,
+            scope1: emission.Scope1,
+            scope2: emission.Scope2,
+            scope3: emission.Scope3,
+          };
+        } else {
+          // Handle missing emission data (optional: log or set defaults)
+          console.warn("Emission not found for location:", location);
+          return {
+            ...row,
+            emission_tracker: 0,
+            scope1: 0,
+            scope2: 0,
+            scope3: 0,
+          }; // Or set appropriate default values
+        }
+      })
+    );
+
+    res.status(200).json({ message: "success", data: result });
+  } catch (error) {
+    console.error("Error generating rows:", error);
+    res.status(500).send("Server error: " + error.message); // More descriptive message
+  }
+}; */
+
+  
 
  
 

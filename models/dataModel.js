@@ -44,7 +44,7 @@ const dataSchema = mongoose.Schema({
     //required: true,
   },
   unit: {
-    type: Number,
+    type: String,
   },
 
   // integration: {
