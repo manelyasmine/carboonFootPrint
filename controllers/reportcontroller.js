@@ -3,7 +3,7 @@ import user from "../models/userModel.js";
 
 const createReport = async (req, res) => {
   const filePath = req.file.path;
-  console.log(filePath)
+  console.log(filePath);
 
   try {
     const newReport = new report({
@@ -12,15 +12,15 @@ const createReport = async (req, res) => {
       endDate: req.body.endDate,
       createdBy: req.body.createdBy,
       createdAt: new Date(),
-      status: req.body.status || 'failed',
-      downloadURL: filePath
+      status: req.body.status || "failed",
+      downloadURL: filePath,
     });
 
     const savedReport = await newReport.save();
 
     // Assuming "pdfData" field in the request body contains the base64 encoded PDF data
     if (req.body.pdfData) {
-      const pdfBuffer = Buffer.from(req.body.pdfData, 'base64');
+      const pdfBuffer = Buffer.from(req.body.pdfData, "base64");
       const pdfPath = "/path/to/store/pdfs/" + savedReport._id + ".pdf";
 
       // Save the PDF to the file system (replace with your storage logic)
@@ -38,29 +38,26 @@ const createReport = async (req, res) => {
   }
 };
 
+const getReports = async (req, res) => {
+  console.log("calling getReports");
 
-const getReports=async(req,res)=>{
- console.log("calling getReports")
-
-  try{ 
+  try {
     const reportRoles = await report.find({});
-    console.log("repo",reportRoles)
+    console.log("repo", reportRoles);
     res.json(reportRoles);
-  }catch(e) {
+  } catch (e) {
     return res.status(400).json({ error: "Internal Server Error" });
   }
-  
-}
-
-
-
+};
 
 const uploadImage = async (req, res, next) => {
   try {
     const reportId = req.params.id; // Check for ID in body or params
 
     if (!reportId) {
-      return res.status(400).json({ message: "Missing reportId ID in request" });
+      return res
+        .status(400)
+        .json({ message: "Missing reportId ID in request" });
     }
     const report = await Report.findById(reportId);
     if (!report) {
@@ -69,7 +66,7 @@ const uploadImage = async (req, res, next) => {
 
     if (req.is("multipart/form-data")) {
       saveImage(req, report, next);
-      await handleSendNotif("uploaded new image for the report", req , res);
+      await handleSendNotif("uploaded new image for the report", req, res);
       res.status(200).json({ message: "Image Uploaded" });
     }
   } catch (error) {
@@ -77,8 +74,6 @@ const uploadImage = async (req, res, next) => {
     res.status(500).json({ message: "Internal server error" }); // Generic error message for security
   }
 };
-
-
 
 const saveImage = async (req, report, next) => {
   let imageName = "report" + "-" + Date.now();
@@ -98,12 +93,6 @@ const saveImage = async (req, report, next) => {
 
   return { success: true, result: { message: "Image Added successfuly " } };
 };
-
-
-
-
-
-
 
 /* const createReport = async (req, res) => {
   console.log("reposrtt",req)
@@ -135,18 +124,15 @@ const saveImage = async (req, report, next) => {
 
 const deleteReport = async (req, res) => {
   const roleId = req.params.id;
-  console.log("report delete",roleId)
-  try { 
-
+  console.log("report delete", roleId);
+  try {
     const deletedRole = await report.deleteOne({ _id: roleId });
 
-    res.json({ message: 'report deleted successfully' });
-    
-
+    res.json({ message: "report deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error deleting role',"error":error });
+    res.status(500).json({ message: "Error deleting role", error: error });
   }
 };
 
-export { createReport ,uploadImage,getReports,deleteReport};
+export { createReport, uploadImage, getReports, deleteReport };
