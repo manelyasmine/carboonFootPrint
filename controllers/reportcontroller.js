@@ -38,7 +38,7 @@ const createReport = async (req, res) => {
   }
 };
 
-const getReports = async (req, res) => {
+/* const getReports = async (req, res) => {
   console.log("calling getReports");
 
   try {
@@ -48,7 +48,135 @@ const getReports = async (req, res) => {
   } catch (e) {
     return res.status(400).json({ error: "Internal Server Error" });
   }
+}; */
+/* const getReports = async (req, res) => {
+  console.log("calling getReports");
+
+  try { 
+    const reportRoles = await report.find({}).populate('createdBy', { profileImage: 1 });
+
+    res.json(reportRoles);
+  } catch (e) {
+    return res.status(400).json({ error: "Internal Server Error" });
+  }
 };
+ */
+
+const getReports = async (req, res) => {
+  try {
+    const { start, end, page = 1, limit = 8, search, column, operator, value } = req.query;
+
+    const searchFilter = {};
+    
+    if (search) {
+      searchFilter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (start && end) {
+      searchFilter.startDate = { $gte: new Date(start).toISOString().split('T')[0] };
+      searchFilter.endDate = { $lte: new Date(end).toISOString().split('T')[0] };
+    }
+
+    if (column && operator && value) {
+      if (column !== 'createdBy') {
+        const validColumns = ['name', 'status'];
+        if (!validColumns.includes(column)) {
+          return res.status(400).json({ error: `Invalid column name: ${column}` });
+        }
+
+        const validOperators = ['equals', 'startsWith', 'endsWith', 'contains', 'greaterThan', 'lessThan'];
+        if (!validOperators.includes(operator)) {
+          return res.status(400).json({ error: `Invalid operator: ${operator}` });
+        }
+
+        let filterExpression;
+        switch (operator) {
+          case 'equals':
+            filterExpression = { [column]: value };
+            break;
+          case 'startsWith':
+            filterExpression = { [column]: { $regex: new RegExp(`^${value}`, "i") } };
+            break;
+          case 'endsWith':
+            filterExpression = { [column]: { $regex: new RegExp(`${value}$`, "i") } };
+            break;
+          case 'contains':
+            filterExpression = { [column]: { $regex: new RegExp(value, "i") } };
+            break;
+          case 'greaterThan':
+            filterExpression = { [column]: { $gt: value } };
+            break;
+          case 'lessThan':
+            filterExpression = { [column]: { $lt: value } };
+            break;
+          default:
+            // Handle unsupported operators (if applicable)
+            break;
+        }
+
+        searchFilter.$and = searchFilter.$and || [];
+        searchFilter.$and.push(filterExpression);
+      } 
+    }
+
+    // Count total matching documents
+    const total = await report.countDocuments(searchFilter);
+
+    // Calculate pagination
+    const totalPages = Math.ceil(total / limit);
+    const pageMin = Math.min(Math.max(page, 1), totalPages);
+    const skip = (pageMin - 1) * limit;
+
+    // Query with population
+    let reportQuery = report.find(searchFilter, {})
+                            .populate({
+                              path: 'createdBy',
+                              select: 'profileImage username',
+                            });
+
+    // Apply pagination
+    if (skip >= 0) {
+      reportQuery = reportQuery.skip(skip).limit(limit);
+    }
+
+    // Execute query
+    const reportRoles = await reportQuery;
+
+    // Post-filtering based on createdBy.username
+    if (column === 'createdBy' && operator && value) {
+      console.log("post filetering",operator,value,reportRoles)
+      const filteredReports = reportRoles.filter(report => {
+        console.log("report",report)
+        const username = report.createdBy && report.createdBy.username;
+        console.log("username",username)
+        if (!username) return false;
+
+        switch (operator) {
+          case 'equals':
+            return username.toLowerCase() === value.toLowerCase();
+          case 'startsWith':
+            return username.toLowerCase().startsWith(value.toLowerCase());
+          case 'endsWith':
+            return username.toLowerCase().endsWith(value.toLowerCase());
+          case 'contains':
+            return username.toLowerCase().includes(value.toLowerCase());
+          default:
+            return true;
+        }
+      });
+
+      res.json({ reportRoles: filteredReports, total, pageMin, totalPages });
+    } else {
+      res.json({ reportRoles, total, pageMin, totalPages });
+    }
+  } catch (e) {
+    console.error("Error fetching reports:", e);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 
 const uploadImage = async (req, res, next) => {
   try {

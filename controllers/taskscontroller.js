@@ -24,11 +24,7 @@ const createTask = async (req, res) => {
     if (existingTask) {
       return res.status(400).json({ error: "Task with this name already exists" });
     }
-     // Validate that all userIds are valid users
-    /*  const validUsers = await user.find({ _id: { $in: usersIds } });
-     if (validUsers.length !== usersIds.length) {
-       return res.status(400).json({ error: "One or more user IDs are invalid" });
-     } */
+     
  
     const mytask = new task({
       taskName,
@@ -38,7 +34,13 @@ const createTask = async (req, res) => {
       createdBy
     }); 
     await mytask.save();
-    res.status(201).json(mytask);
+    const target_name=await target.findById(targetName);
+   const users= await user.find({ _id: { $in: usersIds } }).select("username");
+   console.log("users==>",users)
+    const taskId=({taskName:taskName,targetName:target_name.name,dueDate:dueDate,
+      usersIds:users,createdBy:createdBy})
+    console.log("targetNamee=>",target_name,taskId)
+    res.status(201).json(taskId);
   } catch (error) {
     console.error('Error creating task:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -53,6 +55,7 @@ const assignTask = async (req, res) => {
     
     // Find the existing task by ID
     const existingTask = await task.findById(id);
+    const users= await user.find({ _id: { $in: usersIds } }).select("username");
     console.log("task ===>",task);
     if (!existingTask) {
       return res.status(404).json({ message: "Task not found" });
@@ -68,10 +71,21 @@ const assignTask = async (req, res) => {
     }
 
     
-    if (usersIds) {existingTask.assignedUser = usersIds;
-    await existingTask.save();}
+    if (usersIds) {
+      existingTask.assignedUser = usersIds;
+    await existingTask.save();
+  }
 
-    return res.status(200).json({ message: "Task assigned successfully" });
+  const target_name=await target.findById(existingTask.targetName);
+  const taskId=({
+    id:existingTask._id,taskName:existingTask.taskName,
+                  targetName:target_name.name,
+                  dueDate:existingTask.dueDate,
+                  usersIds:users,
+                  createdBy:existingTask.createdBy})
+    console.log("task updated",taskId)
+
+    return res.status(200).json({ message: "Task assigned successfully",taskId });
   } catch (error) {
     console.error('Error assigning task:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -119,9 +133,7 @@ const updateTask=async(req,res)=>{
       if (taskNameExists) {
         return res.status(400).json({ error: "Task with this name already exists" });
       }
-    } 
-    console.log("lenth of users",usersIds.length)
-    // Validate if all usersIds exist in the database if provided
+    }  
     if (usersIds) {
       const validUsers = await user.find({ _id: { $in: usersIds } });
       if (validUsers.length !== usersIds.length) {
@@ -137,7 +149,21 @@ const updateTask=async(req,res)=>{
     existingTask.updatedBy = req.user._id; // Assuming the userId of the updater is stored in req.user
 
     await existingTask.save();
-    res.status(200).json(existingTask);
+
+
+
+    const target_name=await target.findById(targetName);
+    const users= await user.find({ _id: { $in: usersIds } }).select("username");
+    console.log("users==>",users)
+     const taskId=({
+      id:existingTask._id,taskName:existingTask.taskName,
+                    targetName:target_name.name,
+                    dueDate:existingTask.dueDate,
+                    usersIds:users,
+                    createdBy:existingTask.createdBy})
+      console.log("task updated",taskId)
+
+    res.status(200).json(taskId);
   } catch (error) {
     console.error('Error updating task:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -274,8 +300,8 @@ const deleteTask = async (req, res) => {
         //.skip(skip)
         //.limit(limit)
         .populate({ path: "targetName", select: "name" }) // Select only the name field from target
-        .populate({ path: "assignedUser", select: "username email" }); // Select only the email field from assignedUser
-        
+        .populate({ path: "assignedUser", select: "username email profileImage" }); // Select only the email field from assignedUser
+     
         console.log("search==>",search)
         if (search) {
            console.log("if search",tasks)

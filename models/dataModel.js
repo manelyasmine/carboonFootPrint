@@ -19,7 +19,7 @@ const dataSchema = mongoose.Schema({
     //required: true,
   },
   quantity: {
-    type: String,
+    type: Number,
     //required: true,
     default: "0",
   },

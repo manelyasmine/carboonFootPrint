@@ -5,7 +5,12 @@ const locationSchema = mongoose.Schema({
   city: { type: String, required: true },
   state: { type: String, required: true },
   postalCode: { type: String, required: true },
-  country: { type: String, required: true }
+  country: { type: String, required: true },
+  primaryLocation: {
+    type: String,
+    enum: ["true", "false"], // Add other statuses as needed
+    default: "false",
+  },
 });
  
 

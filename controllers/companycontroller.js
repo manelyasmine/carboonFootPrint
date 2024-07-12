@@ -84,15 +84,21 @@ const addLocation = async (req, res, next) => {
     }
 
     const companyId = req.params.id;
-    const { address, city, state, postalCode, country } = req.body;
+    const { address, city, state, postalCode, country,primary } = req.body;
 
+  
     // Find the company by ID
     const companyExsit = await Company.findById(companyId);
     if (!companyExsit) {
       res.status(404).json({ error: "Company not found" });
       // return next(createError(404, "Company not found"));
     }
-
+    const locations= await Company.findById(companyId).populate("locations");
+    console.log("locations==>",locations.locations.some(loc=>loc.primaryLocation=="true"))
+    
+      if(locations.locations.some(loc=>loc.primaryLocation=="true") && primary=="true"){
+        res.status(404).json({ error: "you already have primary locations" });
+    } else{ 
     // Add new location to the company's locations array
     const newLocation = new Location({
       address,
@@ -100,6 +106,7 @@ const addLocation = async (req, res, next) => {
       state,
       postalCode,
       country,
+      primaryLocation:primary,
     });
     await handleSendNotif("created new location", req , res);
     await newLocation.save();
@@ -111,6 +118,7 @@ const addLocation = async (req, res, next) => {
     res
       .status(200)
       .json({ message: "Location added successfully", newLocation });
+  }
   } catch (error) {
     next(createError(500, error.message));
   }
@@ -195,15 +203,23 @@ const deleteLocation = async (req, res, next) => {
     if (locationIndex === -1) {
       return next(createError(404, "Location not found"));
     }
+  
     // Remove the location from the company's locations array
     company.locations.splice(locationIndex, 1);
     const location = await Location.findById(req.params.id);
-    if (location) await location.deleteOne({ _id: location._id });
+    if(location && location.primaryLocation=="true")  {
+      await handleSendNotif("You cant deleted primary location", req , res);
+      res.status(200).json({ message: "Location cant be deleted successfully", company });
+    }
+    if (location && location.primaryLocation=="false") 
+      {await location.deleteOne({ _id: location._id });
+    
 
     // Save the updated company
     await company.save();
     await handleSendNotif("deleted location", req , res);
     res.status(200).json({ message: "Location deleted successfully", company });
+}
   } catch (error) {
     next(createError(500, error.message));
   }
